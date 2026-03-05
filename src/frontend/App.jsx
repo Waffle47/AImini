@@ -117,7 +117,9 @@ function DetectorTab() {
     if (!email.trim()) return;
     setLoading(true); setResult(null); setError(null);
     try {
-      const res = await fetch("http://localhost:5000/api/analyse", {
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+      const res = await fetch(`${API_URL}/api/analyse`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ email })
@@ -125,8 +127,7 @@ function DetectorTab() {
 
       if (!res.ok) throw new Error("Server responded with error. Check backend terminal.");
 
-      // THE FIX: Your backend already cleans the data and parses the JSON.
-      // We no longer need data.content[0].text or .replace().
+      // backend cleans the data and parses the JSON.
       const data = await res.json();
       setResult(data);
       

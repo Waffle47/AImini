@@ -4,7 +4,14 @@ const Anthropic = require('@anthropic-ai/sdk');
 const cors = require('cors');
 
 const app = express();
-app.use(cors());
+
+// 1. Configure CORS to allow your Vercel URL in production
+// While developing, app.use(cors()) works, but for deployment:
+app.use(cors({
+    origin: process.env.FRONTEND_URL || '*', 
+    methods: ['GET', 'POST']
+}));
+
 app.use(express.json());
 
 // Check if API key exists before starting
@@ -20,11 +27,14 @@ app.post('/api/analyse', async (req, res) => {
         const { email } = req.body;
         console.log("📩 Received analysis request...");
 
+        if (!email) {
+            return res.status(400).json({ error: "Email content is required" });
+        }
+
         const msg = await anthropic.messages.create({
-            // UPDATED MODEL: Replacing retired 3.5 Sonnet with Sonnet 4.6
-            model: "claude-sonnet-4-6", 
+            // Ensure you use a valid model string like "claude-3-7-sonnet-20250219"
+            model: "claude-3-7-sonnet-20250219", 
             max_tokens: 1024,
-            // SYSTEM PROMPT: Forces AI to behave as a pure API
             system: "You are a fraud detection engine. Analyze emails and return ONLY a raw JSON object. Do not include any introductory text or markdown formatting.",
             messages: [{ 
                 role: "user", 
@@ -32,10 +42,8 @@ app.post('/api/analyse', async (req, res) => {
             }],
         });
 
-        //  Extract only the text content
         const aiResponseText = msg.content[0].text;
         
-        //  Attempt to parse JSON on server to ensure frontend gets valid data
         try {
             const result = JSON.parse(aiResponseText.replace(/```json|```/g, "").trim());
             console.log("✅ Analysis successful");
@@ -46,11 +54,13 @@ app.post('/api/analyse', async (req, res) => {
         }
 
     } catch (error) {
-        // This will now catch 404s if model names are wrong or 401s for key issues
         console.error("❌ Server Error:", error.message);
         res.status(500).json({ error: "Internal Server Error", message: error.message });
     }
 });
 
+// 2. Render provides the PORT automatically via environment variables
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 FraudGuard Server running on port ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 FraudGuard Server running on port ${PORT}`);
+});
