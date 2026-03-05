@@ -33,7 +33,7 @@ app.post('/api/analyse', async (req, res) => {
 
         const msg = await anthropic.messages.create({
             // Ensure you use a valid model string like "claude-3-7-sonnet-20250219"
-            model: "claude-3-7-sonnet-20250219", 
+            model: "claude-sonnet-4-6", 
             max_tokens: 1024,
             system: "You are a fraud detection engine. Analyze emails and return ONLY a raw JSON object. Do not include any introductory text or markdown formatting.",
             messages: [{ 
