@@ -117,9 +117,9 @@ function DetectorTab() {
     if (!email.trim()) return;
     setLoading(true); setResult(null); setError(null);
     try {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+      const API_URL = import.meta.env.VITE_API_URL || "https://aimini-1.onrender.com";
 
-      const res = await fetch(`https://aimini.onrender.com`, {
+      const res = await fetch(`${API_URL}/api/analyse`, {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ email })
